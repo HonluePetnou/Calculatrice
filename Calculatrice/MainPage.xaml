@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Calculatrice .NET MAUI – Activité n°4, Atelier de développement mobile
+  Auteur : PETNOU Honlue Frédéric Armel – ENSPD
+  Fichier : MainPage.xaml – interface de la calculatrice
+
+  Layouts utilisés dans cette page (7) :
+  Grid, VerticalStackLayout, HorizontalStackLayout, ScrollView, FlexLayout, Border, AbsoluteLayout
+-->
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="Calculatrice.MainPage"
+             Title="Calculatrice"
+             BackgroundColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}">
+
+    <ContentPage.Resources>
+        <!-- Style commun à toutes les touches -->
+        <Style x:Key="KeyBase" TargetType="Button">
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="CornerRadius" Value="14" />
+            <Setter Property="Padding" Value="0" />
+            <Setter Property="MinimumHeightRequest" Value="0" />
+            <Setter Property="MinimumWidthRequest" Value="0" />
+            <Setter Property="BorderWidth" Value="0" />
+        </Style>
+        <Style x:Key="DigitKey" TargetType="Button" BasedOn="{StaticResource KeyBase}">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray600}}" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+        </Style>
+        <Style x:Key="FunctionKey" TargetType="Button" BasedOn="{StaticResource KeyBase}">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Black}, Dark={StaticResource White}}" />
+            <Setter Property="FontSize" Value="20" />
+        </Style>
+        <Style x:Key="OperatorKey" TargetType="Button" BasedOn="{StaticResource KeyBase}">
+            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />
+            <Setter Property="FontSize" Value="28" />
+        </Style>
+        <Style x:Key="AdvancedKey" TargetType="Button" BasedOn="{StaticResource KeyBase}">
+            <Setter Property="BackgroundColor" Value="Transparent" />
+            <Setter Property="BorderWidth" Value="1" />
+            <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray500}}" />
+            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}" />
+            <Setter Property="FontSize" Value="17" />
+            <Setter Property="HeightRequest" Value="40" />
+            <Setter Property="Margin" Value="3" />
+            <Setter Property="FlexLayout.Grow" Value="1" />
+            <Setter Property="FlexLayout.Basis" Value="22%" />
+        </Style>
+    </ContentPage.Resources>
+
+    <!-- 1. GRID racine : 2 lignes en portrait, 2 colonnes en paysage (voir code-behind) -->
+    <Grid x:Name="RootGrid"
+          Padding="12"
+          RowSpacing="12"
+          ColumnSpacing="12"
+          RowDefinitions="2*,3*"
+          ColumnDefinitions="*">
+
+        <!-- ===================== Zone d'information : écran + historique ===================== -->
+        <Grid x:Name="InfoPanel" Grid.Row="0" RowDefinitions="Auto,*" RowSpacing="10">
+
+            <!-- 2. BORDER : l'« écran » de la calculatrice -->
+            <Border x:Name="DisplayCard"
+                    Grid.Row="0"
+                    Padding="16,12"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 18"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray100}, Dark={StaticResource Gray900}}">
+
+                <!-- 3. VERTICALSTACKLAYOUT : opération en cours au-dessus du résultat -->
+                <VerticalStackLayout Spacing="2">
+                    <Label x:Name="ExpressionLabel"
+                           Text=" "
+                           FontSize="18"
+                           HorizontalTextAlignment="End"
+                           LineBreakMode="HeadTruncation"
+                           MaxLines="1"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray300}}" />
+                    <Label x:Name="ResultLabel"
+                           Text="0"
+                           FontSize="52"
+                           FontAttributes="Bold"
+                           HorizontalTextAlignment="End"
+                           LineBreakMode="HeadTruncation"
+                           MaxLines="1" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Historique -->
+            <Grid Grid.Row="1" RowDefinitions="Auto,*" RowSpacing="4">
+
+                <!-- 4. HORIZONTALSTACKLAYOUT : en-tête de l'historique -->
+                <HorizontalStackLayout Grid.Row="0" Spacing="8" HorizontalOptions="End">
+                    <Label Text="Historique"
+                           FontSize="14"
+                           VerticalOptions="Center"
+                           TextColor="{AppThemeBinding Light={StaticResource Gray500}, Dark={StaticResource Gray300}}" />
+                    <Button Text="Effacer"
+                            FontSize="13"
+                            Padding="10,0"
+                            HeightRequest="30"
+                            MinimumHeightRequest="0"
+                            CornerRadius="15"
+                            BackgroundColor="Transparent"
+                            BorderWidth="1"
+                            BorderColor="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray500}}"
+                            TextColor="{AppThemeBinding Light={StaticResource Gray600}, Dark={StaticResource Gray200}}"
+                            Clicked="OnClearHistoryClicked" />
+                </HorizontalStackLayout>
+
+                <!-- 5. SCROLLVIEW : l'historique défile sans jamais pousser le clavier hors de l'écran -->
+                <ScrollView Grid.Row="1">
+                    <VerticalStackLayout x:Name="HistoryList" Spacing="6" Padding="4,0">
+                        <Label x:Name="EmptyHistoryLabel"
+                               Text="Aucun calcul pour l'instant"
+                               FontSize="14"
+                               HorizontalTextAlignment="End"
+                               TextColor="{AppThemeBinding Light={StaticResource Gray400}, Dark={StaticResource Gray400}}" />
+                    </VerticalStackLayout>
+                </ScrollView>
+            </Grid>
+        </Grid>
+
+        <!-- ===================== Zone des touches ===================== -->
+        <Grid x:Name="KeysPanel" Grid.Row="1" RowDefinitions="Auto,*" RowSpacing="8">
+
+            <!-- 6. FLEXLAYOUT : fonctions avancées, passent à la ligne si l'écran est étroit -->
+            <FlexLayout Grid.Row="0"
+                        Wrap="Wrap"
+                        Direction="Row"
+                        JustifyContent="SpaceBetween"
+                        AlignItems="Center">
+                <Button Text="√x" CommandParameter="sqrt" Style="{StaticResource AdvancedKey}" Clicked="OnAdvancedClicked" />
+                <Button Text="x²" CommandParameter="square" Style="{StaticResource AdvancedKey}" Clicked="OnAdvancedClicked" />
+                <Button Text="1/x" CommandParameter="inverse" Style="{StaticResource AdvancedKey}" Clicked="OnAdvancedClicked" />
+                <Button Text="π" CommandParameter="pi" Style="{StaticResource AdvancedKey}" Clicked="OnAdvancedClicked" />
+            </FlexLayout>
+
+            <!-- 1 bis. GRID du pavé : toutes les touches en * pour s'adapter à la taille de l'écran -->
+            <Grid x:Name="Keypad"
+                  Grid.Row="1"
+                  RowSpacing="8"
+                  ColumnSpacing="8"
+                  RowDefinitions="*,*,*,*,*"
+                  ColumnDefinitions="*,*,*,*">
+
+                <Button Grid.Row="0" Grid.Column="0" Text="C" Style="{StaticResource FunctionKey}" Clicked="OnClearClicked" />
+                <Button Grid.Row="0" Grid.Column="1" Text="⌫" Style="{StaticResource FunctionKey}" Clicked="OnBackspaceClicked" />
+                <Button Grid.Row="0" Grid.Column="2" Text="%" Style="{StaticResource FunctionKey}" Clicked="OnPercentClicked" />
+                <Button Grid.Row="0" Grid.Column="3" Text="÷" Style="{StaticResource OperatorKey}" Clicked="OnOperatorClicked" />
+
+                <Button Grid.Row="1" Grid.Column="0" Text="7" Style="{StaticResource DigitKey}" Clicked="OnDigitClicked" />
+                <Button Grid.Row="1" Grid.Column="1" Text="8" Style="{StaticResource DigitKey}" Clicked="OnDigitClicked" />
+                <Button Grid.Row="1" Grid.Column="2" Text="9" Style="{StaticResource DigitKey}" Clicked="OnDigitClicked" />
+                <Button Grid.Row="1" Grid.Column="3" Text="×" Style="{StaticResource OperatorKey}" Clicked="OnOperatorClicked" />
+
+                <Button Grid.Row="2" Grid.Column="0" Text="4" Style="{StaticResource DigitKey}" Clicked="OnDigitClicked" />
+                <Button Grid.Row="2" Grid.Column="1" Text="5" Style="{StaticResource DigitKey}" Clicked="OnDigitClicked" />
+                <Button Grid.Row="2" Grid.Column="2" Text="6" Style="{StaticResource DigitKey}" Clicked="OnDigitClicked" />
+                <Button Grid.Row="2" Grid.Column="3" Text="−" Style="{StaticResource OperatorKey}" Clicked="OnOperatorClicked" />
+
+                <Button Grid.Row="3" Grid.Column="0" Text="1" Style="{StaticResource DigitKey}" Clicked="OnDigitClicked" />
+                <Button Grid.Row="3" Grid.Column="1" Text="2" Style="{StaticResource DigitKey}" Clicked="OnDigitClicked" />
+                <Button Grid.Row="3" Grid.Column="2" Text="3" Style="{StaticResource DigitKey}" Clicked="OnDigitClicked" />
+                <Button Grid.Row="3" Grid.Column="3" Text="+" Style="{StaticResource OperatorKey}" Clicked="OnOperatorClicked" />
+
+                <Button Grid.Row="4" Grid.Column="0" Text="±" Style="{StaticResource FunctionKey}" Clicked="OnSignClicked" />
+                <Button Grid.Row="4" Grid.Column="1" Text="0" Style="{StaticResource DigitKey}" Clicked="OnDigitClicked" />
+                <Button Grid.Row="4" Grid.Column="2" Text="," Style="{StaticResource DigitKey}" Clicked="OnDecimalClicked" />
+                <Button Grid.Row="4" Grid.Column="3" Text="=" Style="{StaticResource OperatorKey}" Clicked="OnEqualsClicked" />
+            </Grid>
+        </Grid>
+
+        <!-- 7. ABSOLUTELAYOUT : calque de notification superposé à toute la page (message « Copié ») -->
+        <AbsoluteLayout x:Name="ToastLayer"
+                        Grid.RowSpan="2"
+                        Grid.ColumnSpan="2"
+                        InputTransparent="True"
+                        CascadeInputTransparent="True">
+            <Border x:Name="Toast"
+                    AbsoluteLayout.LayoutBounds="0.5,0.95,AutoSize,AutoSize"
+                    AbsoluteLayout.LayoutFlags="PositionProportional"
+                    Padding="16,8"
+                    StrokeThickness="0"
+                    StrokeShape="RoundRectangle 16"
+                    Opacity="0"
+                    BackgroundColor="{AppThemeBinding Light={StaticResource Gray900}, Dark={StaticResource Gray100}}">
+                <Label x:Name="ToastLabel"
+                       FontSize="14"
+                       TextColor="{AppThemeBinding Light={StaticResource White}, Dark={StaticResource Black}}" />
+            </Border>
+        </AbsoluteLayout>
+    </Grid>
+</ContentPage>
